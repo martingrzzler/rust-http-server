@@ -1,4 +1,4 @@
-use crate::http::{ParseError, Request, Response, StatusCode};
+use crate::http::{ParseError, StatusCode, Request, Response};
 use std::convert::TryFrom;
 use std::io::Read;
 use std::net::TcpListener;
