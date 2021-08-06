@@ -6,6 +6,7 @@ use website_handler::WebsiteHandler;
 mod http;
 mod server;
 mod website_handler;
+mod thread_pool;
 
 fn main() {
     let server = Server::new("127.0.0.1:8080".to_string());
