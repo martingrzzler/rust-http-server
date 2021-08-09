@@ -13,6 +13,7 @@ pub trait Handler: Send + Sync {
   }
 }
 
+#[derive(Clone)]
 pub struct Server {
   addr: String,
 }
@@ -22,7 +23,7 @@ impl Server {
     Self { addr }
   }
 
-  fn handle_connection(&self, mut stream: TcpStream, handler: Arc<impl Handler>) {
+  fn handle_connection(&self, mut stream: TcpStream, handler: Arc<impl Handler + 'static>) {
     let mut buffer = [0; 1024];
     match stream.read(&mut buffer) {
       Ok(_) => {
@@ -39,16 +40,18 @@ impl Server {
     }
   }
 
-  pub fn run(self, handler: impl Handler) -> ! {
-    let handler = Arc::new(handler);
+  pub fn run(self, handler: impl Handler + 'static) -> ! {
     let listener = TcpListener::bind(&self.addr).unwrap();
-    let pool = ThreadPool::new(4);
+    let pool = ThreadPool::new(6);
     println!("Server listening on {}...", self.addr);
+    let server = Arc::new(self);
+    let handler = Arc::new(handler);
     loop {
       match listener.accept() {
         Ok((stream, _)) => {
-          let reference = Arc::clone(&handler);
-          pool.execute(move || self.handle_connection(stream, reference))
+          let h = Arc::clone(&handler);
+          let s = Arc::clone(&server);
+          pool.execute(move || s.handle_connection(stream, h))
         }
         Err(e) => println!("Failed to establish connection: {}", e),
       }

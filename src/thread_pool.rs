@@ -1,7 +1,6 @@
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use std::thread;
-
 struct Worker {
 	id: u32,
 	thread: Option<thread::JoinHandle<()>>,
@@ -25,7 +24,7 @@ impl Worker {
 			match message {
 				Message::NewJob(job) => {
 					println!("Worker {} got a job; executing.", id);
-
+					// thread::sleep(time::Duration::from_secs(5));
 					job();
 				}
 				Message::Terminate => {

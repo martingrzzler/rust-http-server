@@ -2,7 +2,6 @@ use super::http::{Method, Request, Response, StatusCode};
 use super::server::Handler;
 use std::fs;
 use std::marker::{Send, Sync};
-use std::{thread, time};
 
 pub struct WebsiteHandler {
   public_path: String,
@@ -31,19 +30,20 @@ impl WebsiteHandler {
   }
 }
 
-
 impl Handler for WebsiteHandler {
   fn handle_request(&self, request: &Request) -> Response {
     match request.method() {
       Method::GET => match request.path() {
         "/" => Response::new(StatusCode::Ok, self.read_file("index.html")),
         "/takes-time" => {
-          thread::sleep(time::Duration::from_secs(3));
+          for _ in 0..100000000 {
+            let _ = 5 * 5 * 5 * 5;
+          }
           Response::new(StatusCode::Ok, Some(b"Long simulation completed!".to_vec()))
         }
         path => match self.read_file(path) {
           Some(contents) => Response::new(StatusCode::Ok, Some(contents)),
-          None => Response::new(StatusCode::NotFound, self.read_file("404.html"))
+          None => Response::new(StatusCode::NotFound, self.read_file("404.html")),
         },
       },
       _ => Response::new(StatusCode::NotFound, None),
